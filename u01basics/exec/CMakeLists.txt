@@ -5,10 +5,15 @@ find_package(Armadillo REQUIRED)
 include_directories(${ARMADILLO_INCLUDE_DIRS})
 
 set ( argLib libCmdArgs.so)
-link_directories(argLib ~/Tutorials/u01basics/libCmdArgs/build )
-include_directories(argLib ~/Tutorials/u01basics/libCmdArgs/include )
+include_directories(argLib ../libCmdArgs/include )
+link_directories(argLib ../libCmdArgs/build )
+# This is bad right? Would normall install it into /usr/lib/ ?
+
+
+include_directories(include)
 
 file(GLOB SOURCES "src/*.cpp")
+
 add_executable(exec ${SOURCES})
-target_link_libraries(exec ${ARMADILLO_LIBRARIES})
 target_link_libraries(exec ${argLib})
+target_link_libraries(exec ${ARMADILLO_LIBRARIES})

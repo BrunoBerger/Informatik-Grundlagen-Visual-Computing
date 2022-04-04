@@ -14,6 +14,7 @@ std::vector<int> getIntArgs(int argc, char* argv[])
             v.push_back(std::stoi(argv[i], &pos));
         }
         catch (std::invalid_argument){}
+        catch(std::out_of_range) {}
     }
     std::cout << "Found " << v.size() << " int-args" << std::endl;
     return v;
