@@ -4,9 +4,9 @@ project(U_01_Basics)
 find_package(Armadillo REQUIRED)
 include_directories(${ARMADILLO_INCLUDE_DIRS})
 
-set ( argLib libCmdArgs.so)
-include_directories(argLib ../libCmdArgs/include )
-link_directories(argLib ../libCmdArgs/build )
+set ( argLib CmdArgs.so)
+include_directories(argLib ~/Tutorials/u01basics/libCmdArgs/include )
+link_directories(argLib ~/Tutorials/u01basics/libCmdArgs/build )
 # This is bad right? Would normall install it into /usr/lib/ ?
 
 
