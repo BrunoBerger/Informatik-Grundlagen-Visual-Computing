@@ -4,15 +4,14 @@ project(U_01_Basics)
 find_package(Armadillo REQUIRED)
 include_directories(${ARMADILLO_INCLUDE_DIRS})
 
-set ( argLib CmdArgs.so)
-include_directories(argLib ~/Tutorials/u01basics/libCmdArgs/include )
-link_directories(argLib ~/Tutorials/u01basics/libCmdArgs/build )
-# This is bad right? Would normall install it into /usr/lib/ ?
+set (argLib CmdArgs.so)
+set(libPath ${CMAKE_CURRENT_SOURCE_DIR}/../libCmdArgs)
+include_directories(arglib ${libPath}/include)
+link_directories(argLib ${libPath}/build )
 
 
 include_directories(include)
-
-file(GLOB SOURCES "src/*.cpp")
+file(GLOB SOURCES src/main.cpp src/matrixMath.cpp)
 
 add_executable(exec ${SOURCES})
 target_link_libraries(exec ${argLib})
