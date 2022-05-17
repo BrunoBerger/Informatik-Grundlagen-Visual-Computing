@@ -1,0 +1,58 @@
+New Benchmark 
+
+[ mine_no_O ]
+time step 500 of 3000: 0.00064737 s per time step
+time step 1000 of 3000: 0.000592006 s per time step
+time step 1500 of 3000: 0.000595868 s per time step
+time step 2000 of 3000: 0.000603722 s per time step
+time step 2500 of 3000: 0.00060147 s per time step
+time step 3000 of 3000: 0.000602112 s per time step
+Total: 1.822653932 s
+Checksum: 4706870
+Original Checksum:  4706870
+Checksum matches
+
+[ mine_with_O3 ]
+time step 500 of 3000: 0.000612214 s per time step
+time step 1000 of 3000: 0.000597267 s per time step
+time step 1500 of 3000: 0.000605228 s per time step
+time step 2000 of 3000: 0.000682815 s per time step
+time step 2500 of 3000: 0.000698139 s per time step
+time step 3000 of 3000: 0.00068381 s per time step
+Total: 1.941169649 s
+Checksum: 4706870
+Original Checksum:  4706870
+Checksum matches
+
+[ mine_with_Os ]
+time step 500 of 3000: 0.000218744 s per time step
+time step 1000 of 3000: 0.00021134 s per time step
+time step 1500 of 3000: 0.000233731 s per time step
+time step 2000 of 3000: 0.000221218 s per time step
+time step 2500 of 3000: 0.00024449 s per time step
+time step 3000 of 3000: 0.000212923 s per time step
+Total: 0.672122042 s
+Checksum: 4706870
+Original Checksum:  4706870
+Checksum matches
+
+[ original_no_O ]
+time step 500 of 3000: 0.000778412 s per time step
+time step 1000 of 3000: 0.000794767 s per time step
+time step 1500 of 3000: 0.000747449 s per time step
+time step 2000 of 3000: 0.000747628 s per time step
+time step 2500 of 3000: 0.000778044 s per time step
+time step 3000 of 3000: 0.000755873 s per time step
+Total: 2.302718001 s
+Checksum: 4706870
+
+[ original_with_O3 ]
+time step 500 of 3000: 0.000742731 s per time step
+time step 1000 of 3000: 0.0007484 s per time step
+time step 1500 of 3000: 0.000750568 s per time step
+time step 2000 of 3000: 0.00081908 s per time step
+time step 2500 of 3000: 0.000745075 s per time step
+time step 3000 of 3000: 0.000750542 s per time step
+Total: 2.280124373 s
+Checksum: 4706870
+
