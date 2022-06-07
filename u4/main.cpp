@@ -32,6 +32,13 @@ class Point3D {
             auto temp = this->dotProduct(other) / (this->magnitude() * other.magnitude());
             return acos(temp) * 180 / M_PI;
         }
+        Point3D cross(Point3D other) {
+            return Point3D(
+                e2*other.e3 - e3*other.e2,
+                e3*other.e1 - e1*other.e3,
+                e1*other.e2 - e2*other.e1
+            );
+        }
 
         friend std::ostream& operator << (std::ostream &os , const Point3D& v ) {
             return os << "(" << v.e1 << "|" << v.e2 << "|" << v.e3 << ")";
@@ -60,29 +67,34 @@ class Vector3D : public Point3D<T> {
 
 enum Direction {REJECTED, RIGHT, LEFT};
 
-template<typename T1, typename T2>
-Direction testWayPoint(Point3D<T1> dronePosition, Vector3D<T1> droneForward, Vector3D<T2> droneUp, Point3D<T1> waypoint){
+template<typename T>
+Direction testWayPoint(Point3D<T> dronePosition, Vector3D<T> droneForward, Vector3D<T> droneUp, Point3D<T> waypoint){
     float distance = dronePosition.distance(waypoint);
     float angle = droneForward.angle(waypoint);
+    Point3D<float> crossProd = droneForward.cross(droneUp);
 
     std::cout << "distance: " << distance << std::endl;
     std::cout << "angle: " << angle << std::endl;
+    std::cout << "CrossVec: " << crossProd << std::endl;
 
     if (distance >= 10)
         return REJECTED;
     if (abs(angle) > 60)
         return REJECTED;
-
-    return RIGHT;
+    if (crossProd.e3 > 0)
+        return RIGHT;
+    else 
+        return LEFT;
+        
 }
 
 
 int main() {
     // Testing testWayPoint function
     Point3D<float> dPos(0, 0, 0);
-    Vector3D<float> dForward(0, 1, 0);
-    Vector3D<int> dUp(0, 1, 0);
-    Point3D<float> wp(0, 3, 4);
+    Vector3D<float> dForward(1, 1, 3);
+    Vector3D<float> dUp(0, 1, 0);
+    Point3D<float> wp(3, 4, 4);
     std::cout << "Input vecs: "<< dPos << dForward << dUp << wp << std::endl;
    
     int x = testWayPoint(dPos, dForward, dUp, wp);
@@ -103,4 +115,6 @@ int main() {
     }
     // For comparison: 
     // https://matrixcalc.org/de/#%7B%7B1,2,3,4%7D,%7B1,2,1,1%7D,%7B1,1,2,1%7D,%7B1,1,1,2%7D%7D*%7B%7B2%7D,%7B3%7D,%7B4%7D,%7B1%7D%7D
+
+    // Vector3D<float> test_crossProd = dPos.cross(dUp);
 }
