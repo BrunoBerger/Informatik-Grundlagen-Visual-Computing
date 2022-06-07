@@ -71,36 +71,47 @@ template<typename T>
 Direction testWayPoint(Point3D<T> dronePosition, Vector3D<T> droneForward, Vector3D<T> droneUp, Point3D<T> waypoint){
     float distance = dronePosition.distance(waypoint);
     float angle = droneForward.angle(waypoint);
-    Point3D<float> crossProd = droneForward.cross(droneUp);
+    Point3D<float> crossProd = droneForward.cross(waypoint);
 
-    std::cout << "distance: " << distance << std::endl;
-    std::cout << "angle: " << angle << std::endl;
-    std::cout << "CrossVec: " << crossProd << std::endl;
+    // std::cout << "distance: " << distance << std::endl;
+    // std::cout << "angle: " << angle << std::endl;
+    // std::cout << "CrossProd: " << crossProd << std::endl;
 
     if (distance >= 10)
         return REJECTED;
     if (abs(angle) > 60)
         return REJECTED;
-    if (crossProd.e3 > 0)
+    if (crossProd.e1 > 0)
         return RIGHT;
     else 
-        return LEFT;
-        
+        return LEFT;    
 }
 
 
 int main() {
     // Testing testWayPoint function
     Point3D<float> dPos(0, 0, 0);
-    Vector3D<float> dForward(1, 1, 3);
+    Vector3D<float> dForward(0, 0, 3);
     Vector3D<float> dUp(0, 1, 0);
-    Point3D<float> wp(3, 4, 4);
-    std::cout << "Input vecs: "<< dPos << dForward << dUp << wp << std::endl;
+    std::cout << "Waypoint Test:\nDrone: "<< dPos << dForward << dUp << std::endl;
    
-    int x = testWayPoint(dPos, dForward, dUp, wp);
-    std::cout << "Waypoint acceptance: " << x << std::endl;
+    Point3D<float> wp1(3, 4, 4);
+    int res1 = testWayPoint(dPos, dForward, dUp, wp1);
+    std::cout << "Waypoint: "<< wp1 << " Acceptance: " << res1 << std::endl;
 
+    Point3D<float> wp2(0,-2, 2);
+    int res2 = testWayPoint(dPos, dForward, dUp, wp2);
+    std::cout << "Waypoint: "<< wp2 << " Acceptance: " << res2 << std::endl;
 
+    Point3D<float> wp3(0, 1, 14);
+    int res3 = testWayPoint(dPos, dForward, dUp, wp3);
+    std::cout << "Waypoint: "<< wp3 << " Acceptance: " << res3 << std::endl;
+
+    Point3D<float> wp4(0, 4, 1);
+    int res4 = testWayPoint(dPos, dForward, dUp, wp4);
+    std::cout << "Waypoint: "<< wp4 << " Acceptance: " << res4 << std::endl;
+
+    std::cout << "\nMatrix Multiplication Test:" << std::endl;
     // Testing matrix multiplication
     float mat[4][4];
     mat[0][0] = 1; mat[0][1] = 2; mat[0][2] = 3; mat[0][3] = 4;
@@ -116,5 +127,5 @@ int main() {
     // For comparison: 
     // https://matrixcalc.org/de/#%7B%7B1,2,3,4%7D,%7B1,2,1,1%7D,%7B1,1,2,1%7D,%7B1,1,1,2%7D%7D*%7B%7B2%7D,%7B3%7D,%7B4%7D,%7B1%7D%7D
 
-    // Vector3D<float> test_crossProd = dPos.cross(dUp);
+    // Vector3D<float> test_crossProd = dPos.cross(dUp); // How to return child-class ?
 }
