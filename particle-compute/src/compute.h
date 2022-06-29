@@ -17,3 +17,5 @@ GLuint createComputeShaderProgram(std::string computeShaderPath) {
 	glDeleteShader(computeShader);
 	return shaderProgram;
 }
+
+

@@ -11,58 +11,161 @@
 
 #include "util.h"
 #include "compute.h"
+#include "particles.h"
 
 //_______________________________________________________MAIN________________________________________________________//
 
-int main(void) {	
+int main(void) {
 	// create a window with the specified width, height and title and initialize OpenGL 
 	GLFWwindow* window = initialize(640, 480, "OpenGL Starter Project");
+	glCheckError();
 	GLuint shaderProgram = createShaderProgram(
 		ASSETS_PATH"/shaders/test.vert.glsl", 
-		ASSETS_PATH"/shaders/test.frag.glsl");
+		ASSETS_PATH"/shaders/frag.glsl");
+	glCheckError();
 	GLuint vao = createBuffers();
+	
+	GLuint computeShaderParticleSimulationProgram = createComputeShaderProgram(ASSETS_PATH"/shaders/simulateParticles.glsl");
 
-	GLuint computeShaderProgram = createComputeShaderProgram(ASSETS_PATH"/shaders/compute.glsl");
+	GLuint computeShaderImageWriteProgram = createComputeShaderProgram(ASSETS_PATH"/shaders/writeParticleToImage.glsl");
+
+	//ParticleSystem ps = ParticleSystem(5);
+	//ps.test();
+
+	GLuint ssbo;
+	GLuint vbo;
+	//glGenBuffers(1, &vbo);
+
+/*	glCheckError();
+	unsigned int texture;
+	glGenTextures(1, &texture);
+	glBindTexture(GL_TEXTURE_2D, texture);
+	glActiveTexture(GL_TEXTURE0 + 0);
+	glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA32F, 640, 480, 0, GL_RGBA, GL_FLOAT, NULL);
+	glCheckError();
+	
+	glUseProgram(computeShaderProgram);
+	GLint imageLocation = glGetUniformLocation(computeShaderProgram, "img_output");
+	glUniform1i(imageLocation, 0);
+	glCheckError();
+	*/
+	/////////
+	//Working texture
+	unsigned int texture2;
+	glActiveTexture(GL_TEXTURE0 + 1);
+	// Generate white OpenGL texture.
+	glGenTextures(1, &texture2);
+	glBindTexture(GL_TEXTURE_2D, texture2);
+	glCheckError();
+
+	float* data;
 
 
+	// Allocate the needed space.
+	int width;
+	int height;
+	width = height = 128;
 
-	int work_grp_cnt[3];
-	glGetIntegeri_v(GL_MAX_COMPUTE_WORK_GROUP_COUNT, 0, &work_grp_cnt[0]);
-	glGetIntegeri_v(GL_MAX_COMPUTE_WORK_GROUP_COUNT, 1, &work_grp_cnt[1]);
-	glGetIntegeri_v(GL_MAX_COMPUTE_WORK_GROUP_COUNT, 2, &work_grp_cnt[2]);
-	std::cout << "Max work groups per compute shader" <<
-		" x:" << work_grp_cnt[0] <<
-		" y:" << work_grp_cnt[1] <<
-		" z:" << work_grp_cnt[2] << "\n";
+	data = new float[width * height * sizeof(unsigned char) * 4];
 
-	int work_grp_size[3];
-	glGetIntegeri_v(GL_MAX_COMPUTE_WORK_GROUP_SIZE, 0, &work_grp_size[0]);
-	glGetIntegeri_v(GL_MAX_COMPUTE_WORK_GROUP_SIZE, 1, &work_grp_size[1]);
-	glGetIntegeri_v(GL_MAX_COMPUTE_WORK_GROUP_SIZE, 2, &work_grp_size[2]);
-	std::cout << "Max work group sizes" <<
-		" x:" << work_grp_size[0] <<
-		" y:" << work_grp_size[1] <<
-		" z:" << work_grp_size[2] << "\n";
+	for (int i = 0; i < (int)(width * height * sizeof(unsigned char) * 4); i++)
+	{
+		data[i] = 0.4f;
+	}
 
-	int work_grp_inv;
-	glGetIntegerv(GL_MAX_COMPUTE_WORK_GROUP_INVOCATIONS, &work_grp_inv);
-	std::cout << "Max invocations count per work group: " << work_grp_inv << "\n";
+	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
+	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
+	glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA32F, width, height, 0, GL_RGBA, GL_FLOAT, data);
+
+	glBindImageTexture(1, texture2, 0, false, 0, GL_READ_WRITE, GL_RGBA32F);
 
 
+	glCheckError();
+	//////
+
+	glUseProgram(computeShaderImageWriteProgram);
+	GLint imageLocation = glGetUniformLocation(computeShaderImageWriteProgram, "img_output");
+	glUniform1i(imageLocation, 1);
+	glCheckError();
+
+	glActiveTexture(GL_TEXTURE0 + 1);
+	glUseProgram(shaderProgram);
+	
+
+	// declare and generate a buffer object name
+	GLuint atomicsBuffer;
+	glGenBuffers(1, &atomicsBuffer);
+	// bind the buffer and define its initial storage capacity
+	glBindBuffer(GL_ATOMIC_COUNTER_BUFFER, atomicsBuffer);
+	glBufferData(GL_ATOMIC_COUNTER_BUFFER, sizeof(GLuint) * 1, NULL, GL_DYNAMIC_DRAW);
+	glBindBufferBase(GL_ATOMIC_COUNTER_BUFFER, 2, atomicsBuffer);
+	
+
+	// unbind the buffer 
+	//glBindBuffer(GL_ATOMIC_COUNTER_BUFFER, 0);
+	
+	
 	// loop until the user presses ESC or the window is closed programatically
     while (!glfwWindowShouldClose(window)) {
 		// clear the back buffer with the specified color and the depth buffer with 1
         glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
         
 
-		glUseProgram(computeShaderProgram);
-		glDispatchCompute(ceil(640 / 8), ceil(480 / 4), 1);
-		glMemoryBarrier(GL_ALL_BARRIER_BITS);
+		//***********************************//
+		//***** 1. Simulate particles ********//
 
-		glUseProgram(computeShaderProgram);
+
+
+
+
+
+		//********************************//
+		//***** 2. Write to image ********//
+		glUseProgram(computeShaderImageWriteProgram);
+		glBindBuffer(GL_ATOMIC_COUNTER_BUFFER, atomicsBuffer);
+		GLuint a = 0;
+		glBufferSubData(GL_ATOMIC_COUNTER_BUFFER, 0, sizeof(GLuint), &a);
+		//glBindBuffer(GL_ATOMIC_COUNTER_BUFFER, 0);
+		//glCheckError();
+
+		//imageLocation = glGetUniformLocation(computeShaderProgram, "atominc");
+		//glUniform1i(imageLocation, atomicsBuffer);
+		
+		glActiveTexture(GL_TEXTURE0 + 1);
+		imageLocation = glGetUniformLocation(computeShaderImageWriteProgram, "img_output");
+		//std::cout << "Location: " << imageLocation;
+		glUniform1i(imageLocation, 1);
+		
+		glBindBufferBase(GL_ATOMIC_COUNTER_BUFFER, 2, atomicsBuffer);
+		
+		//**********************//
+		glDispatchCompute(ceil(640), ceil(480), 1);
+		//**********************//
+
+		glMemoryBarrier(GL_ALL_BARRIER_BITS);
+		glCheckError();
+		
+
+		//******
+		GLuint userCounters;
+		glBindBuffer(GL_ATOMIC_COUNTER_BUFFER, atomicsBuffer);
+		glGetBufferSubData(GL_ATOMIC_COUNTER_BUFFER, 0, sizeof(GLuint), &userCounters);
+		glBindBuffer(GL_ATOMIC_COUNTER_BUFFER, 0);
+		//std::cout << userCounters << "\n";
+
+
+
+		//********************************//
+		//***** 3. Render to image ********//
+		glUseProgram(shaderProgram);
+		glActiveTexture(GL_TEXTURE0 + 1);
+		imageLocation = glGetUniformLocation(shaderProgram, "img_input");
+		//std::cout << "Location: " << imageLocation;
+		glUniform1i(imageLocation, 1);
 
 		// render to back buffer
 		render(shaderProgram, vao);
+		glCheckError();
 
 		// switch front and back buffers
 		glfwSwapBuffers(window);

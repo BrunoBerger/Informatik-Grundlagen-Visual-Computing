@@ -11,6 +11,29 @@
 #include <GLFW/glfw3.h>
 #include <GLM/glm.hpp>
 
+GLenum glCheckError_(const char* file, int line)
+{
+	GLenum errorCode;
+	while ((errorCode = glGetError()) != GL_NO_ERROR)
+	{
+		std::string error;
+		switch (errorCode)
+		{
+		case GL_INVALID_ENUM:                  error = "INVALID_ENUM"; break;
+		case GL_INVALID_VALUE:                 error = "INVALID_VALUE"; break;
+		case GL_INVALID_OPERATION:             error = "INVALID_OPERATION"; break;
+		case GL_STACK_OVERFLOW:                error = "STACK_OVERFLOW"; break;
+		case GL_STACK_UNDERFLOW:               error = "STACK_UNDERFLOW"; break;
+		case GL_OUT_OF_MEMORY:                 error = "OUT_OF_MEMORY"; break;
+		case GL_INVALID_FRAMEBUFFER_OPERATION: error = "INVALID_FRAMEBUFFER_OPERATION"; break;
+		}
+		std::cout << error << " | " << file << " (" << line << ")" << std::endl;
+	}
+	return errorCode;
+}
+#define glCheckError() glCheckError_(__FILE__, __LINE__) 
+
+
 //________________________________________________CALLBACK_FUNCTIONS_________________________________________________//
 
 static void errorCallback(int error, const char* description) {
@@ -85,14 +108,18 @@ GLuint createBuffers() {
 	// specify the layout of the vertex data, being the vertex position followed by the vertex color
 	struct Vertex {
 		glm::vec3 pos;
-		glm::vec3 color;
+		glm::vec3 uv;
 	};
 
 	// we specify a triangle with red, green, blue at the tips of the triangle
 	Vertex vertexData[] = {
-		Vertex{glm::vec3(-0.5f, -0.5f, 0.0f), glm::vec3(1.f, 0.f, 0.f)},
-		Vertex{glm::vec3(0.5f, -0.5f, 0.0f), glm::vec3(0.f, 1.f, 0.f)},
-		Vertex{glm::vec3(0.0f,  0.5f, 0.0f), glm::vec3(0.f, 0.f, 1.f)}
+		Vertex{glm::vec3(-1.0f, -1.0f, 0.0f), glm::vec3(0.f, 0.f, 0.f)},
+		Vertex{glm::vec3(1.0f, -1.0f, 0.0f), glm::vec3(1.f, 0.f, 0.f)},
+		Vertex{glm::vec3(1.0f,  1.0f, 0.0f), glm::vec3(1.f, 1.f, 0.f)},
+
+		Vertex{glm::vec3(-1.0f, -1.0f, 0.0f), glm::vec3(0.f, 0.f, 0.f)},
+		Vertex{glm::vec3(1.0f, 1.0f, 0.0f), glm::vec3(1.f, 1.f, 0.f)},
+		Vertex{glm::vec3(-1.0f,  1.0f, 0.0f), glm::vec3(0.f, 1.f, 0.f)}
 	};
 
 	// create the vertex array object that holds all vertex buffers
@@ -111,7 +138,7 @@ GLuint createBuffers() {
 	glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, sizeof(Vertex), (void*)(offsetof(struct Vertex, pos)));
 	glEnableVertexAttribArray(0);
 	// then we specify the layout of the vertex color
-	glVertexAttribPointer(1, 3, GL_FLOAT, GL_FALSE, sizeof(Vertex), (void*)(offsetof(struct Vertex, color)));
+	glVertexAttribPointer(1, 3, GL_FLOAT, GL_FALSE, sizeof(Vertex), (void*)(offsetof(struct Vertex, uv)));
 	glEnableVertexAttribArray(1);
 
 	return vao;
@@ -128,6 +155,7 @@ GLuint compileShader(std::string path, GLenum shaderType) {
 	const char* shaderSourcePtr = shaderSource.c_str();
 	glShaderSource(shaderHandle, 1, &shaderSourcePtr, NULL);
 	glCompileShader(shaderHandle);
+	glCheckError();
 
 	// check if compilation was successful
 	int  success;
@@ -137,6 +165,7 @@ GLuint compileShader(std::string path, GLenum shaderType) {
 		glGetShaderInfoLog(shaderHandle, 512, NULL, infoLog);
 		std::cerr << "Error while compiling shader\n" << infoLog << std::endl;
 	}
+	glCheckError();
 
 	// return the shader handle
 	return shaderHandle;
@@ -175,7 +204,7 @@ GLuint createShaderProgram(std::string vertexShaderPath, std::string fragmentSha
 void render(GLuint shaderProgram, GLuint vao) {
 	glUseProgram(shaderProgram);
 	glBindVertexArray(vao);
-	glDrawArrays(GL_TRIANGLES, 0, 3);
+	glDrawArrays(GL_TRIANGLES, 0, 6);
 }
 
 //______________________________________________________CLEANUP______________________________________________________//
@@ -189,3 +218,5 @@ void cleanup(GLFWwindow* window, GLuint& shaderProgram, GLuint& vao) {
 	glfwDestroyWindow(window);
 	glfwTerminate();
 }
+
+
