@@ -11,16 +11,14 @@
 #include <GLM/glm.hpp>
 
 #include "util.h"
-#include "compute.h"
-#include "particles.h"
 
-//_______________________________________________________MAIN________________________________________________________//
 const int IMG_WIDTH = 640;
 const int IMG_HEIGHT = 480;
+const int N_PARTICLES = 500;
 
 int main(void) {
 	// create a window with the specified width, height and title and initialize OpenGL 
-	GLFWwindow* window = initialize(640, 480, "OpenGL Starter Project");
+	GLFWwindow* window = initialize(IMG_WIDTH, IMG_HEIGHT, "OpenGL Starter Project");
 	glCheckError();
 	GLuint shaderProgram = createShaderProgram(
 		ASSETS_PATH"/shaders/test.vert.glsl", 
@@ -29,22 +27,6 @@ int main(void) {
 	GLuint vao = createBuffers();
 	GLuint computeShaderParticleSimulationProgram = createComputeShaderProgram(ASSETS_PATH"/shaders/simulateParticles.glsl");
 	GLuint computeShaderImageWriteProgram = createComputeShaderProgram(ASSETS_PATH"/shaders/writeParticleToImage.glsl");
-
-
-/*	glCheckError();
-	unsigned int texture;
-	glGenTextures(1, &texture);
-	glBindTexture(GL_TEXTURE_2D, texture);
-	glActiveTexture(GL_TEXTURE0 + 0);
-	glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA32F, 640, 480, 0, GL_RGBA, GL_FLOAT, NULL);
-	glCheckError();
-	
-	glUseProgram(computeShaderProgram);
-	GLint imageLocation = glGetUniformLocation(computeShaderProgram, "img_output");
-	glUniform1i(imageLocation, 0);
-	glCheckError();
-	*/
-
 
 	/////////
 	//Working texture
@@ -61,14 +43,13 @@ int main(void) {
 	//width = height = 300;
 	tex_data = new float[width * height * sizeof(unsigned char) * 4];
 	for (int i = 0; i < (int)(width * height * sizeof(unsigned char) * 4); i++) {
-		tex_data[i] = 0.1f;
+		tex_data[i] = 0.1f; // Base background color
 	}
 	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
 	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
 	glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA32F, width, height, 0, GL_RGBA, GL_FLOAT, tex_data);
 	glBindImageTexture(1, texture2, 0, false, 0, GL_READ_WRITE, GL_RGBA32F);
 	glCheckError();
-	//////
 
 	glUseProgram(computeShaderImageWriteProgram);
 	GLint imageLocation = glGetUniformLocation(computeShaderImageWriteProgram, "img_output");
@@ -76,37 +57,26 @@ int main(void) {
 	glCheckError();
 	glActiveTexture(GL_TEXTURE0 + 1);
 	glUseProgram(shaderProgram);
-	
-	//////// Atomic increment
-	// declare and generate a buffer object name
-	GLuint atomicsBuffer;
-	glGenBuffers(1, &atomicsBuffer);
-	// bind the buffer and define its initial storage capacity
-	glBindBuffer(GL_ATOMIC_COUNTER_BUFFER, atomicsBuffer);
-	glBufferData(GL_ATOMIC_COUNTER_BUFFER, sizeof(GLuint) * 1, NULL, GL_DYNAMIC_DRAW);
-	glBindBufferBase(GL_ATOMIC_COUNTER_BUFFER, 2, atomicsBuffer);
-	// unbind the buffer (was commented out once...)
-	glBindBuffer(GL_ATOMIC_COUNTER_BUFFER, 0);
-	glCheckError();
 
-	///////// SSBO init
+
+	// Creating particels with random positions
 	struct Particle
 	{
 		float position[2];
 		float velocity[2];
 	};
-	Particle particles[100];
+	Particle particles[N_PARTICLES];
 	srand(time(NULL)); // Seed the time
-	for (int i = 0; i < 100; i++) {
+	for (int i = 0; i < N_PARTICLES; i++) {
 		particles[i] = Particle();
-		particles[i].position[0] = rand() % (640 - 0 + 1) + 0;
-		particles[i].position[1] = rand() % (480 - 0 + 1) + 0;
+		particles[i].position[0] = rand() % (IMG_WIDTH - 0 + 1) + 0;
+		particles[i].position[1] = rand() % (IMG_HEIGHT - 0 + 1) + 0;
 		particles[i].velocity[0] = 0;
 		particles[i].velocity[1] = 0;
-		std::cout << "particel pos (" << particles[i].position[0] << " : " << particles[i].position[1] << ")\n";
+		//std::cout << "particel pos (" << particles[i].position[0] << " : " << particles[i].position[1] << ")\n";
 	}
 
-	
+	///////// SSBO init
 	glUseProgram(computeShaderImageWriteProgram);
 	GLuint ssbo;
 	glGenBuffers(1, &ssbo);
@@ -128,55 +98,32 @@ int main(void) {
 		//***********************************//
 		//***** 1. Simulate particles ********//
 
+		glUseProgram(computeShaderParticleSimulationProgram);
+		int ssbo_binding_2 = 1;
+		int block_index_2 = glGetProgramResourceIndex(computeShaderParticleSimulationProgram, GL_SHADER_STORAGE_BLOCK, "particle_buf");
+		glShaderStorageBlockBinding(computeShaderParticleSimulationProgram, block_index_2, ssbo_binding_2);
+		glBindBufferBase(GL_SHADER_STORAGE_BUFFER, ssbo_binding_2, ssbo);
 
+		glDispatchCompute(N_PARTICLES, 1, 1);
+		glMemoryBarrier(GL_ALL_BARRIER_BITS);
 
-
-
-		glCheckError();
 		//********************************//
 		//***** 2. Write to image ********//
 		glUseProgram(computeShaderImageWriteProgram);
-		glUniform1f(glGetUniformLocation(computeShaderImageWriteProgram, "testVar"), 0.5);
+
 
 		// Update ssbo data
 		int ssbo_binding = 1;
 		int block_index = glGetProgramResourceIndex(computeShaderImageWriteProgram, GL_SHADER_STORAGE_BLOCK, "particle_buf");
-		glCheckError();
 		glShaderStorageBlockBinding(computeShaderImageWriteProgram, block_index, ssbo_binding);
-		glCheckError();
 		glBindBufferBase(GL_SHADER_STORAGE_BUFFER, ssbo_binding, ssbo);
-		glCheckError();
 
-		// Update atominc
-		glBindBuffer(GL_ATOMIC_COUNTER_BUFFER, atomicsBuffer);
-		GLuint a = 0;
-		glBufferSubData(GL_ATOMIC_COUNTER_BUFFER, 0, sizeof(GLuint), &a);
-		glBindBuffer(GL_ATOMIC_COUNTER_BUFFER, 0);
-
-		
 		glActiveTexture(GL_TEXTURE0 + 1);
 		imageLocation = glGetUniformLocation(computeShaderImageWriteProgram, "img_output");
-		//std::cout << "Location: " << imageLocation;
 		glUniform1i(imageLocation, 1);
 		
-		glBindBufferBase(GL_ATOMIC_COUNTER_BUFFER, 2, atomicsBuffer);
-		
-		//**********************//
-		glDispatchCompute(100, 1, 1);
-		//**********************//
-
+		glDispatchCompute(N_PARTICLES, 1, 1);
 		glMemoryBarrier(GL_ALL_BARRIER_BITS);
-		glCheckError();
-		
-
-		//******
-		GLuint userCounters;
-		glBindBuffer(GL_ATOMIC_COUNTER_BUFFER, atomicsBuffer);
-		glGetBufferSubData(GL_ATOMIC_COUNTER_BUFFER, 0, sizeof(GLuint), &userCounters);
-		glBindBuffer(GL_ATOMIC_COUNTER_BUFFER, 0);
-		//std::cout << userCounters << "\n";
-
-
 
 		//********************************//
 		//***** 3. Render to image ********//
@@ -186,18 +133,14 @@ int main(void) {
 		//std::cout << "Location: " << imageLocation;
 		glUniform1i(imageLocation, 1);
 
-		// render to back buffer
+		// render to back buffer and switch with front buffer
 		render(shaderProgram, vao);
-		glCheckError();
-
-		// switch front and back buffers
 		glfwSwapBuffers(window);
         glfwPollEvents();
+		glCheckError();
     }
 
 	// clean up all created objects
 	cleanup(window, shaderProgram, vao);
-
-	// program exits properly
     exit(EXIT_SUCCESS);
 }
