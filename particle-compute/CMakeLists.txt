@@ -1,7 +1,7 @@
 cmake_minimum_required(VERSION 3.14 FATAL_ERROR)
 
 # specify name of the project and specify which language to compile for
-project(opengl-starter LANGUAGES CXX)
+project(ParticleComputing LANGUAGES CXX)
 
 #-----------------------------------------------------------------------------#
 # define the asset path in c++

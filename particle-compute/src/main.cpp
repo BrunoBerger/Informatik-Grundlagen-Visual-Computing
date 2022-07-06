@@ -19,7 +19,7 @@ const int N_PARTICLES = 1000;
 
 int main(void) {
 	// create a window with the specified width, height and title and initialize OpenGL 
-	GLFWwindow* window = initialize(IMG_WIDTH, IMG_HEIGHT, "OpenGL Starter Project");
+	GLFWwindow* window = initialize(IMG_WIDTH, IMG_HEIGHT, "Particle Simulation");
 	glCheckError();
 	GLuint shaderProgram = createShaderProgram(
 		ASSETS_PATH"/shaders/test.vert.glsl", 
@@ -69,8 +69,14 @@ int main(void) {
 	srand(time(NULL)); // Seed the time
 	for (int i = 0; i < N_PARTICLES; i++) {
 		particles[i] = Particle();
+
+		// Option1: Randomly place in frame
 		particles[i].position[0] = rand() % (IMG_WIDTH+1);
 		particles[i].position[1] = rand() % (IMG_HEIGHT+1);
+		// Option2: Place in center
+		//particles[i].position[0] = IMG_WIDTH/2.0;
+		//particles[i].position[1] = IMG_HEIGHT/2.0;
+
 		particles[i].velocity[0] = (((float)rand() / (float)RAND_MAX)-0.5)*2;
 		particles[i].velocity[1] = (((float)rand() / (float)RAND_MAX)-0.5)*2;
 		//std::cout << "particel vel (" << particles[i].velocity[0] << " : " << particles[i].velocity[1] << ")\n";
