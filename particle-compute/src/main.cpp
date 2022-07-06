@@ -1,5 +1,6 @@
 #include <fstream>
 #include <iostream>
+#include <random>
 #include <stdio.h>
 #include <stdlib.h>
 #include <streambuf>
@@ -14,7 +15,7 @@
 
 const int IMG_WIDTH = 640;
 const int IMG_HEIGHT = 480;
-const int N_PARTICLES = 500;
+const int N_PARTICLES = 1000;
 
 int main(void) {
 	// create a window with the specified width, height and title and initialize OpenGL 
@@ -29,28 +30,27 @@ int main(void) {
 	GLuint computeShaderImageWriteProgram = createComputeShaderProgram(ASSETS_PATH"/shaders/writeParticleToImage.glsl");
 
 	/////////
-	//Working texture
+	//Background texture
 	unsigned int texture2;
 	glActiveTexture(GL_TEXTURE0 + 1);
-	// Generate white OpenGL texture.
 	glGenTextures(1, &texture2);
 	glBindTexture(GL_TEXTURE_2D, texture2);
 	glCheckError();
 	float* tex_data;
-	// Allocate the needed space.
 	int width = IMG_WIDTH;
 	int height = IMG_HEIGHT;
-	//width = height = 300;
+	//width = height = 100; // Accivate to "zoom in"
 	tex_data = new float[width * height * sizeof(unsigned char) * 4];
-	for (int i = 0; i < (int)(width * height * sizeof(unsigned char) * 4); i++) {
-		tex_data[i] = 0.1f; // Base background color
-	}
+	for (int i = 0; i < (int)(width * height * sizeof(unsigned char) * 4); i++)
+		tex_data[i] = 0.2f; // Base background color
+	
 	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
 	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
 	glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA32F, width, height, 0, GL_RGBA, GL_FLOAT, tex_data);
 	glBindImageTexture(1, texture2, 0, false, 0, GL_READ_WRITE, GL_RGBA32F);
 	glCheckError();
 
+	
 	glUseProgram(computeShaderImageWriteProgram);
 	GLint imageLocation = glGetUniformLocation(computeShaderImageWriteProgram, "img_output");
 	glUniform1i(imageLocation, 1);
@@ -59,7 +59,7 @@ int main(void) {
 	glUseProgram(shaderProgram);
 
 
-	// Creating particels with random positions
+	// Creating random particles
 	struct Particle
 	{
 		float position[2];
@@ -69,11 +69,11 @@ int main(void) {
 	srand(time(NULL)); // Seed the time
 	for (int i = 0; i < N_PARTICLES; i++) {
 		particles[i] = Particle();
-		particles[i].position[0] = rand() % (IMG_WIDTH - 0 + 1) + 0;
-		particles[i].position[1] = rand() % (IMG_HEIGHT - 0 + 1) + 0;
-		particles[i].velocity[0] = 0;
-		particles[i].velocity[1] = 0;
-		//std::cout << "particel pos (" << particles[i].position[0] << " : " << particles[i].position[1] << ")\n";
+		particles[i].position[0] = rand() % (IMG_WIDTH+1);
+		particles[i].position[1] = rand() % (IMG_HEIGHT+1);
+		particles[i].velocity[0] = (((float)rand() / (float)RAND_MAX)-0.5)*2;
+		particles[i].velocity[1] = (((float)rand() / (float)RAND_MAX)-0.5)*2;
+		//std::cout << "particel vel (" << particles[i].velocity[0] << " : " << particles[i].velocity[1] << ")\n";
 	}
 
 	///////// SSBO init
@@ -93,6 +93,7 @@ int main(void) {
     while (!glfwWindowShouldClose(window)) {
 		// clear the back buffer with the specified color and the depth buffer with 1
         glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
+		glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA32F, width, height, 0, GL_RGBA, GL_FLOAT, tex_data);
         
 
 		//***********************************//
