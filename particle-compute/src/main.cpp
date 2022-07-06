@@ -15,6 +15,8 @@
 #include "particles.h"
 
 //_______________________________________________________MAIN________________________________________________________//
+const int IMG_WIDTH = 640;
+const int IMG_HEIGHT = 480;
 
 int main(void) {
 	// create a window with the specified width, height and title and initialize OpenGL 
@@ -54,12 +56,12 @@ int main(void) {
 	glCheckError();
 	float* tex_data;
 	// Allocate the needed space.
-	int width;
-	int height;
-	width = height = 128;
+	int width = IMG_WIDTH;
+	int height = IMG_HEIGHT;
+	//width = height = 300;
 	tex_data = new float[width * height * sizeof(unsigned char) * 4];
 	for (int i = 0; i < (int)(width * height * sizeof(unsigned char) * 4); i++) {
-		tex_data[i] = 0.4f;
+		tex_data[i] = 0.1f;
 	}
 	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
 	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
@@ -94,22 +96,24 @@ int main(void) {
 		float velocity[2];
 	};
 	Particle particles[100];
+	srand(time(NULL)); // Seed the time
 	for (int i = 0; i < 100; i++) {
 		particles[i] = Particle();
-		particles[i].position[0] = 0.5;
-		particles[i].position[1] = 0.5;
+		particles[i].position[0] = rand() % (640 - 0 + 1) + 0;
+		particles[i].position[1] = rand() % (480 - 0 + 1) + 0;
 		particles[i].velocity[0] = 0;
 		particles[i].velocity[1] = 0;
+		std::cout << "particel pos (" << particles[i].position[0] << " : " << particles[i].position[1] << ")\n";
 	}
 
-	std::cout << particles[59].position[1] << "particel pos \n";
+	
 	glUseProgram(computeShaderImageWriteProgram);
 	GLuint ssbo;
 	glGenBuffers(1, &ssbo);
 	glBindBuffer(GL_SHADER_STORAGE_BUFFER, ssbo);
 	glBufferData(GL_SHADER_STORAGE_BUFFER, sizeof(particles), &particles, GL_DYNAMIC_DRAW);
 	//the khronos docs put this line in
-	//glBindBufferBase(GL_SHADER_STORAGE_BUFFER, 1, SSBO);
+	//glBindBufferBase(GL_SHADER_STORAGE_BUFFER, 1, ssbo);
 	glBindBuffer(GL_SHADER_STORAGE_BUFFER, 0);
 	glCheckError();
 
@@ -134,6 +138,7 @@ int main(void) {
 		glUseProgram(computeShaderImageWriteProgram);
 		glUniform1f(glGetUniformLocation(computeShaderImageWriteProgram, "testVar"), 0.5);
 
+		// Update ssbo data
 		int ssbo_binding = 1;
 		int block_index = glGetProgramResourceIndex(computeShaderImageWriteProgram, GL_SHADER_STORAGE_BLOCK, "particle_buf");
 		glCheckError();
@@ -142,14 +147,12 @@ int main(void) {
 		glBindBufferBase(GL_SHADER_STORAGE_BUFFER, ssbo_binding, ssbo);
 		glCheckError();
 
-
+		// Update atominc
 		glBindBuffer(GL_ATOMIC_COUNTER_BUFFER, atomicsBuffer);
 		GLuint a = 0;
 		glBufferSubData(GL_ATOMIC_COUNTER_BUFFER, 0, sizeof(GLuint), &a);
 		glBindBuffer(GL_ATOMIC_COUNTER_BUFFER, 0);
 
-		//imageLocation = glGetUniformLocation(computeShaderProgram, "atominc");
-		//glUniform1i(imageLocation, atomicsBuffer);
 		
 		glActiveTexture(GL_TEXTURE0 + 1);
 		imageLocation = glGetUniformLocation(computeShaderImageWriteProgram, "img_output");
@@ -159,7 +162,7 @@ int main(void) {
 		glBindBufferBase(GL_ATOMIC_COUNTER_BUFFER, 2, atomicsBuffer);
 		
 		//**********************//
-		glDispatchCompute(ceil(640), ceil(480), 1);
+		glDispatchCompute(100, 1, 1);
 		//**********************//
 
 		glMemoryBarrier(GL_ALL_BARRIER_BITS);
