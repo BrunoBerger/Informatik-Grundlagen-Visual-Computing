@@ -4,6 +4,14 @@ layout(rgba32f) uniform image2D img_output;
 
 layout(binding = 2) uniform atomic_uint atominc;
 
+
+layout (std430, binding=2) buffer particle
+{ 
+  vec2 position;
+  vec2 velocity;
+};
+
+// This takes and mutates the ssbo
 void main() {
   
   // base pixel colour for image
@@ -13,12 +21,7 @@ void main() {
 
   
   if ((pixel_coords.x / 4 ) % 2 == 0) {
-	pixel = vec4(0.0, 1.0, 0.0, 1.0);
-	atomicCounterIncrement(atominc);
-
-  
+	//pixel = vec4(0.0, 1.0, 0.0, 1.0);
+	//atomicCounterIncrement(atominc);
   }
-
-  // output to a specific pixel in the image
-  imageStore(img_output, pixel_coords, pixel);
 }
