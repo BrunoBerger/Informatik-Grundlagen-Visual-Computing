@@ -17,6 +17,9 @@ const int IMG_WIDTH = 640;
 const int IMG_HEIGHT = 480;
 const int N_PARTICLES = 1000;
 
+double attractorXPos = IMG_WIDTH / 2;
+double attractorYPos = IMG_HEIGHT / 2;
+
 int main(void) {
 	// create a window with the specified width, height and title and initialize OpenGL 
 	GLFWwindow* window = initialize(IMG_WIDTH, IMG_HEIGHT, "Particle Simulation");
@@ -43,7 +46,7 @@ int main(void) {
 	tex_data = new float[width * height * sizeof(unsigned char) * 4];
 	for (int i = 0; i < (int)(width * height * sizeof(unsigned char) * 4); i++)
 		tex_data[i] = 0.2f; // Base background color
-	
+
 	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
 	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
 	glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA32F, width, height, 0, GL_RGBA, GL_FLOAT, tex_data);
@@ -70,15 +73,15 @@ int main(void) {
 	for (int i = 0; i < N_PARTICLES; i++) {
 		particles[i] = Particle();
 
-		// Option1: Randomly place in frame
-		particles[i].position[0] = rand() % (IMG_WIDTH+1);
-		particles[i].position[1] = rand() % (IMG_HEIGHT+1);
+		// Option1: Place randomly in frame
+		particles[i].position[0] = rand() % IMG_WIDTH;
+		particles[i].position[1] = rand() % IMG_HEIGHT;
 		// Option2: Place in center
 		//particles[i].position[0] = IMG_WIDTH/2.0;
 		//particles[i].position[1] = IMG_HEIGHT/2.0;
 
-		particles[i].velocity[0] = (((float)rand() / (float)RAND_MAX)-0.5)*2;
-		particles[i].velocity[1] = (((float)rand() / (float)RAND_MAX)-0.5)*2;
+		particles[i].velocity[0] = (((float)rand() / (float)RAND_MAX)-0.5)*3;
+		particles[i].velocity[1] = (((float)rand() / (float)RAND_MAX)-0.5)*3;
 		//std::cout << "particel vel (" << particles[i].velocity[0] << " : " << particles[i].velocity[1] << ")\n";
 	}
 
@@ -104,8 +107,19 @@ int main(void) {
 
 		//***********************************//
 		//***** 1. Simulate particles ********//
-
 		glUseProgram(computeShaderParticleSimulationProgram);
+
+		// If space ispressed place atttractor at cursor, otherwise at point defined at top
+		double xpos, ypos;
+		if (glfwGetKey(window, GLFW_KEY_SPACE) == GLFW_PRESS) {
+			glfwGetCursorPos(window, &xpos, &ypos);
+		}
+		else {
+			xpos = attractorXPos;
+			ypos = attractorYPos;
+		}
+		glUniform2f(glGetUniformLocation(computeShaderParticleSimulationProgram, "cursorPos"), xpos, IMG_HEIGHT-ypos);
+
 		int ssbo_binding_2 = 1;
 		int block_index_2 = glGetProgramResourceIndex(computeShaderParticleSimulationProgram, GL_SHADER_STORAGE_BLOCK, "particle_buf");
 		glShaderStorageBlockBinding(computeShaderParticleSimulationProgram, block_index_2, ssbo_binding_2);

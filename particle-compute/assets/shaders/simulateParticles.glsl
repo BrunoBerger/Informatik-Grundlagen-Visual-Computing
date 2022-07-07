@@ -1,6 +1,6 @@
 #version 430
 layout(local_size_x = 1, local_size_y = 1) in;
-layout(binding = 2) uniform atomic_uint atominc;
+uniform vec2 cursorPos;
 
 struct Particle {
 	vec2 position;
@@ -23,6 +23,7 @@ void main() {
 	vec2 pos = particles[index].position;
 
 	// Gravitational pull
+	blackHolePos = cursorPos; // toggle following the cursor
 	vec2 force = (blackHolePos - pos) * blackHoleStr;
 	particles[index].velocity += force;
 
@@ -32,8 +33,9 @@ void main() {
 	if (pos.y > IMG_HEIGHT || pos.y < 0)
 		particles[index].velocity.y *= -1;
 
+	// Some slowdown
+	particles[index].velocity *= 0.9999;
 
 	// Apply current velocity
 	particles[index].position += simSpeed * particles[index].velocity;
-	
 }
