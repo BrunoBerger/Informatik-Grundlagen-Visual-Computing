@@ -1,11 +1,18 @@
 # Particle System with Compute Shaders
 
-Here is a video, if it does not compile correctly:  
-https://youtu.be/spv89t-xkFE
-
 The project was built from this:  
 https://github.com/adrianderstroff/opengl-starter  
 Follow the instructions below to build it.
+
+The amount of particles can be adjusted with the constant "N_PARTICELS", at the top of "main.cpp".  
+Here you can also change the window size, but you also have to change the constant in the "assets/shaders/simulateParticles.glsl" compute shader.  
+Depending on the GPU the particles may be slower or faster.
+This can be adjusted with variable "simSpeed" in the above shader.
+
+Here is a video, of how I wanted them to look like,
+and also for if it doesn't compile correctly:  
+https://youtu.be/spv89t-xkFE
+
 ***
 # OpenGL Starter
 This is a minimal and simple OpenGL Starter project that provides you with the necessary boilderplate code to get you up and running. This project uses modern CMake and [CPM](https://github.com/TheLartians/CPM.cmake) to download and configure all dependencies for you. The project uses GLFW3 for window generation, GLAD for retrieving the OpenGL functions supported by your system and GLM for vector maths. Follow the **prerequisits** and **build instructions** to set up your project. You then should be able to run the Hello World OpenGL project. From there you can completely change the source files to your liking.
