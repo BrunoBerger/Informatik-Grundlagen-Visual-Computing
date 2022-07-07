@@ -1,21 +1,8 @@
-#include <fstream>
-#include <iostream>
-#include <random>
-#include <stdio.h>
-#include <stdlib.h>
-#include <streambuf>
-#include <string>
-#include <vector>
-
-#include <glad/glad.h>
-#include <GLFW/glfw3.h>
-#include <GLM/glm.hpp>
-
 #include "util.h"
 
 const int IMG_WIDTH = 640;
 const int IMG_HEIGHT = 480;
-const int N_PARTICLES = 1000;
+const int N_PARTICLES = 2000;
 
 double attractorXPos = IMG_WIDTH / 2;
 double attractorYPos = IMG_HEIGHT / 2;
@@ -65,14 +52,14 @@ int main(void) {
 	// Creating random particles
 	struct Particle
 	{
-		float position[2];
-		float velocity[2];
+		GLfloat position[2];
+		GLfloat velocity[2];
+		GLdouble dist = 0;
 	};
 	Particle particles[N_PARTICLES];
 	srand(time(NULL)); // Seed the time
 	for (int i = 0; i < N_PARTICLES; i++) {
 		particles[i] = Particle();
-
 		// Option1: Place randomly in frame
 		particles[i].position[0] = rand() % IMG_WIDTH;
 		particles[i].position[1] = rand() % IMG_HEIGHT;
@@ -97,11 +84,17 @@ int main(void) {
 	glCheckError();
 
 
+	std::cout << "^^These 3 Errors are OK\n\n=========================\n"
+		<< "Simulating " << N_PARTICLES << " particles, in a " 
+		<< IMG_WIDTH << "x" << IMG_HEIGHT << "window. "
+		<< "You can change these constants at the top of the main.cpp file\n"
+		<< "You can hold SPACE to bind the attraction point to your cursor!" << std::endl;
 	//***** Render loop ********//
 	// loop until the user presses ESC or the window is closed programatically
     while (!glfwWindowShouldClose(window)) {
 		// clear the back buffer with the specified color and the depth buffer with 1
         glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
+		// Fill background again, uncomment for "trail effect"
 		glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA32F, width, height, 0, GL_RGBA, GL_FLOAT, tex_data);
         
 
@@ -124,6 +117,7 @@ int main(void) {
 		int block_index_2 = glGetProgramResourceIndex(computeShaderParticleSimulationProgram, GL_SHADER_STORAGE_BLOCK, "particle_buf");
 		glShaderStorageBlockBinding(computeShaderParticleSimulationProgram, block_index_2, ssbo_binding_2);
 		glBindBufferBase(GL_SHADER_STORAGE_BUFFER, ssbo_binding_2, ssbo);
+
 
 		glDispatchCompute(N_PARTICLES, 1, 1);
 		glMemoryBarrier(GL_ALL_BARRIER_BITS);

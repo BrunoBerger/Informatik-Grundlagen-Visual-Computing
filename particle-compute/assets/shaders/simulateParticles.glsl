@@ -5,6 +5,7 @@ uniform vec2 cursorPos;
 struct Particle {
 	vec2 position;
 	vec2 velocity;
+	double dist;
 };
 
 layout (std430, binding=4) buffer particle_buf
@@ -14,6 +15,8 @@ layout (std430, binding=4) buffer particle_buf
 
 int IMG_WIDTH = 640;
 int IMG_HEIGHT = 480;
+
+
 vec2 blackHolePos = vec2(IMG_WIDTH/2, IMG_HEIGHT/2);
 float blackHoleStr = 0.00001;
 float simSpeed = 0.1;
@@ -23,8 +26,9 @@ void main() {
 	vec2 pos = particles[index].position;
 
 	// Gravitational pull
-	blackHolePos = cursorPos; // toggle following the cursor
-	vec2 force = (blackHolePos - pos) * blackHoleStr;
+	blackHolePos = cursorPos;
+	vec2 distV = blackHolePos - pos;
+	vec2 force = distV * blackHoleStr;
 	particles[index].velocity += force;
 
 	// Keep particles in frame
@@ -33,8 +37,9 @@ void main() {
 	if (pos.y > IMG_HEIGHT || pos.y < 0)
 		particles[index].velocity.y *= -1;
 
-	// Some slowdown
-	particles[index].velocity *= 0.9999;
+	// Slowdown and dist for color
+	particles[index].velocity *= 0.99995;
+	particles[index].dist = length(distV)/300;
 
 	// Apply current velocity
 	particles[index].position += simSpeed * particles[index].velocity;

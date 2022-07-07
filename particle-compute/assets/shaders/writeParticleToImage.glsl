@@ -5,6 +5,7 @@ layout(rgba32f) uniform image2D img_output;
 struct Particle {
 	vec2 position;
 	vec2 velocity;
+	double dist;
 };
 
 layout (std430, binding=3) buffer particle_buf
@@ -18,7 +19,11 @@ void main() {
 		particles[index].position.x, 
 		particles[index].position.y
 	);
-	vec4 new_pixel_col = vec4(1.0, 1.0, 0.0, 1.0);
-	//pixel = vec4(0.6, 0.6, 0.1, 1.0);
+	vec4 new_pixel_col = vec4(
+		1.0,
+		particles[index].dist,
+		0.8, 
+		1.0
+	);
 	imageStore(img_output, new_pixel_pos, new_pixel_col);
 }
