@@ -1,6 +1,13 @@
-From: https://github.com/adrianderstroff/opengl-starter
-# OpenGL Starter
+# Particle System with Compute Shaders
 
+Here is a video, if it does not compile correctly:  
+https://youtu.be/spv89t-xkFE
+
+The project was built from this:  
+https://github.com/adrianderstroff/opengl-starter  
+Follow the instructions below to build it.
+***
+# OpenGL Starter
 This is a minimal and simple OpenGL Starter project that provides you with the necessary boilderplate code to get you up and running. This project uses modern CMake and [CPM](https://github.com/TheLartians/CPM.cmake) to download and configure all dependencies for you. The project uses GLFW3 for window generation, GLAD for retrieving the OpenGL functions supported by your system and GLM for vector maths. Follow the **prerequisits** and **build instructions** to set up your project. You then should be able to run the Hello World OpenGL project. From there you can completely change the source files to your liking.
 
 IDEs that support CMake should automatically detect when you add or remove files in the *src* or *assets* folder, however not all IDEs support this feature. In that case simply rerun CMake.

@@ -1,4 +1,6 @@
 #include "util.h"
+#include <random>
+#include <time.h>
 
 const int IMG_WIDTH = 640;
 const int IMG_HEIGHT = 480;
