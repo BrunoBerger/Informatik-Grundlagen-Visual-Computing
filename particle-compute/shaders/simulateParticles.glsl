@@ -13,8 +13,8 @@ layout (std430, binding=4) buffer particle_buf
 	Particle particles[];
 };
 
-int IMG_WIDTH = 640;
-int IMG_HEIGHT = 480;
+int IMG_WIDTH = 1000;
+int IMG_HEIGHT = 1000;
 
 
 vec2 blackHolePos = vec2(IMG_WIDTH/2, IMG_HEIGHT/2);

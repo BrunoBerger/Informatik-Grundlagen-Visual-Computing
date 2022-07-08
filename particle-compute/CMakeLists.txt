@@ -5,7 +5,7 @@ project(ParticleComputing LANGUAGES CXX)
 
 #-----------------------------------------------------------------------------#
 # define the asset path in c++
-set(ASSETS_DIR ${PROJECT_SOURCE_DIR}/assets)
+set(ASSETS_DIR ${PROJECT_SOURCE_DIR})
 add_compile_definitions(ASSETS_PATH="${ASSETS_DIR}")
 
 #-----------------------------------------------------------------------------#
